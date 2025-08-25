@@ -1,14 +1,39 @@
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { useToast } from '@/hooks/use-toast';
 import Icon from '@/components/ui/icon';
 
 const Index = () => {
+  const { toast } = useToast();
+  const [selectedService, setSelectedService] = useState('');
+  const [selectedPriority, setSelectedPriority] = useState('normal');
+  const [calculatedPrice, setCalculatedPrice] = useState(0);
+  const [formData, setFormData] = useState({
+    name: '',
+    phone: '',
+    messenger: 'telegram',
+    message: '',
+    service: '',
+    urgentConsultation: false
+  });
+  const [formErrors, setFormErrors] = useState({});
+
   const services = [
     {
+      id: 'start',
       title: "Старт: Что делать приехав в РФ?",
-      price: "1 500 ₽",
+      price: 1500,
+      priceText: "1 500 ₽",
       duration: "30 мин",
       description: "Консультация (Telegram/WhatsApp)",
       features: [
@@ -19,8 +44,10 @@ const Index = () => {
       urgent: false
     },
     {
+      id: 'patent',
       title: "Пошаговый план: Патент за 5 дней",
-      price: "2 900 ₽",
+      price: 2900,
+      priceText: "2 900 ₽",
       duration: "План за 24 часа",
       description: "Подробная инструкция",
       features: [
@@ -31,8 +58,10 @@ const Index = () => {
       urgent: false
     },
     {
+      id: 'urgent',
       title: "Спасение: Патент просрочен?",
-      price: "3 500 ₽",
+      price: 3500,
+      priceText: "3 500 ₽",
       duration: "Срочно",
       description: "Анализ рисков и решение",
       features: [
@@ -44,8 +73,10 @@ const Index = () => {
       urgent: true
     },
     {
+      id: 'residence',
       title: "РВП / ВНЖ: План действий",
-      price: "4 900 ₽",
+      price: 4900,
+      priceText: "4 900 ₽",
       duration: "Полная поддержка",
       description: "Пошаговая инструкция",
       features: [
@@ -56,6 +87,86 @@ const Index = () => {
       urgent: false
     }
   ];
+
+  const validateForm = (data) => {
+    const errors = {};
+    if (!data.name.trim()) errors.name = 'Имя обязательно';
+    if (!data.phone.trim()) errors.phone = 'Телефон обязателен';
+    if (!data.service) errors.service = 'Выберите услугу';
+    if (data.phone && !/^[\d\s\-\+\(\)]+$/.test(data.phone)) {
+      errors.phone = 'Некорректный номер телефона';
+    }
+    return errors;
+  };
+
+  const calculatePrice = (serviceId, priority, urgentConsult) => {
+    const service = services.find(s => s.id === serviceId);
+    if (!service) return 0;
+    
+    let price = service.price;
+    if (priority === 'urgent') price += 1000;
+    if (urgentConsult) price += 500;
+    
+    return price;
+  };
+
+  const handleServiceSelect = (serviceId) => {
+    setSelectedService(serviceId);
+    setFormData(prev => ({ ...prev, service: serviceId }));
+    const newPrice = calculatePrice(serviceId, selectedPriority, formData.urgentConsultation);
+    setCalculatedPrice(newPrice);
+  };
+
+  const handlePriorityChange = (priority) => {
+    setSelectedPriority(priority);
+    if (selectedService) {
+      const newPrice = calculatePrice(selectedService, priority, formData.urgentConsultation);
+      setCalculatedPrice(newPrice);
+    }
+  };
+
+  const handleUrgentToggle = (checked) => {
+    setFormData(prev => ({ ...prev, urgentConsultation: checked }));
+    if (selectedService) {
+      const newPrice = calculatePrice(selectedService, selectedPriority, checked);
+      setCalculatedPrice(newPrice);
+    }
+  };
+
+  const handleInputChange = (field, value) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    if (formErrors[field]) {
+      setFormErrors(prev => ({ ...prev, [field]: '' }));
+    }
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const errors = validateForm(formData);
+    
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
+      return;
+    }
+
+    toast({
+      title: "Заявка отправлена!",
+      description: "Мы свяжемся с вами в течение 15 минут",
+    });
+
+    // Reset form
+    setFormData({
+      name: '',
+      phone: '',
+      messenger: 'telegram',
+      message: '',
+      service: '',
+      urgentConsultation: false
+    });
+    setSelectedService('');
+    setCalculatedPrice(0);
+    setFormErrors({});
+  };
 
   const testimonials = [
     {
@@ -124,10 +235,108 @@ const Index = () => {
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-              <Button size="lg" className="bg-primary hover:bg-primary/90 text-lg px-8 py-4">
-                <Icon name="MessageSquare" size={20} className="mr-2" />
-                Получить консультацию
-              </Button>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button size="lg" className="bg-primary hover:bg-primary/90 text-lg px-8 py-4">
+                    <Icon name="MessageSquare" size={20} className="mr-2" />
+                    Получить консультацию
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[500px]">
+                  <DialogHeader>
+                    <DialogTitle className="font-sans">Быстрая заявка</DialogTitle>
+                    <DialogDescription>
+                      5 минут — и вы узнаете, что делать дальше
+                    </DialogDescription>
+                  </DialogHeader>
+
+                  <form onSubmit={handleSubmit} className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="hero-name">Имя *</Label>
+                        <Input
+                          id="hero-name"
+                          value={formData.name}
+                          onChange={(e) => handleInputChange('name', e.target.value)}
+                          className={formErrors.name ? 'border-destructive' : ''}
+                          placeholder="Ваше имя"
+                        />
+                        {formErrors.name && (
+                          <p className="text-sm text-destructive mt-1">{formErrors.name}</p>
+                        )}
+                      </div>
+                      <div>
+                        <Label htmlFor="hero-phone">Телефон *</Label>
+                        <Input
+                          id="hero-phone"
+                          value={formData.phone}
+                          onChange={(e) => handleInputChange('phone', e.target.value)}
+                          className={formErrors.phone ? 'border-destructive' : ''}
+                          placeholder="+7 999 123-45-67"
+                        />
+                        {formErrors.phone && (
+                          <p className="text-sm text-destructive mt-1">{formErrors.phone}</p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="hero-messenger">Мессенджер для связи</Label>
+                      <Select value={formData.messenger} onValueChange={(value) => handleInputChange('messenger', value)}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="telegram">Telegram</SelectItem>
+                          <SelectItem value="whatsapp">WhatsApp</SelectItem>
+                          <SelectItem value="phone">Звонок</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="hero-service">Что вас интересует?</Label>
+                      <Select 
+                        value={formData.service} 
+                        onValueChange={(value) => {
+                          handleInputChange('service', value);
+                          handleServiceSelect(value);
+                        }}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Выберите услугу" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {services.map((service) => (
+                            <SelectItem key={service.id} value={service.id}>
+                              {service.title}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="hero-message">Ваша ситуация</Label>
+                      <Textarea
+                        id="hero-message"
+                        value={formData.message}
+                        onChange={(e) => handleInputChange('message', e.target.value)}
+                        placeholder="Кратко опишите что произошло..."
+                        rows={3}
+                      />
+                    </div>
+
+                    <div className="flex gap-3">
+                      <Button type="submit" className="flex-1 bg-primary hover:bg-primary/90">
+                        <Icon name="Send" size={16} className="mr-2" />
+                        Получить консультацию
+                      </Button>
+                    </div>
+                  </form>
+                </DialogContent>
+              </Dialog>
+              
               <Button size="lg" variant="outline" className="text-lg px-8 py-4">
                 <Icon name="Clock" size={20} className="mr-2" />
                 5 минут — узнаете что делать
@@ -183,7 +392,7 @@ const Index = () => {
                     {service.title}
                   </CardTitle>
                   <div className="flex items-baseline gap-2">
-                    <span className="text-2xl font-bold text-primary font-sans">{service.price}</span>
+                    <span className="text-2xl font-bold text-primary font-sans">{service.priceText}</span>
                     <span className="text-sm text-gray-500">{service.duration}</span>
                   </div>
                   <CardDescription>{service.description}</CardDescription>
@@ -197,12 +406,161 @@ const Index = () => {
                       </li>
                     ))}
                   </ul>
-                  <Button 
-                    className={`w-full ${service.urgent ? 'bg-accent hover:bg-accent/90' : 'bg-primary hover:bg-primary/90'}`}
-                  >
-                    <Icon name="ArrowRight" size={16} className="mr-2" />
-                    Заказать
-                  </Button>
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button 
+                        className={`w-full ${service.urgent ? 'bg-accent hover:bg-accent/90' : 'bg-primary hover:bg-primary/90'}`}
+                        onClick={() => handleServiceSelect(service.id)}
+                      >
+                        <Icon name="ArrowRight" size={16} className="mr-2" />
+                        Заказать
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-[500px]">
+                      <DialogHeader>
+                        <DialogTitle className="font-sans">Оформить заявку</DialogTitle>
+                        <DialogDescription>
+                          Заполните форму, и мы свяжемся с вами в течение 15 минут
+                        </DialogDescription>
+                      </DialogHeader>
+
+                      <form onSubmit={handleSubmit} className="space-y-4">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <Label htmlFor="name">Имя *</Label>
+                            <Input
+                              id="name"
+                              value={formData.name}
+                              onChange={(e) => handleInputChange('name', e.target.value)}
+                              className={formErrors.name ? 'border-destructive' : ''}
+                              placeholder="Ваше имя"
+                            />
+                            {formErrors.name && (
+                              <p className="text-sm text-destructive mt-1">{formErrors.name}</p>
+                            )}
+                          </div>
+                          <div>
+                            <Label htmlFor="phone">Телефон *</Label>
+                            <Input
+                              id="phone"
+                              value={formData.phone}
+                              onChange={(e) => handleInputChange('phone', e.target.value)}
+                              className={formErrors.phone ? 'border-destructive' : ''}
+                              placeholder="+7 999 123-45-67"
+                            />
+                            {formErrors.phone && (
+                              <p className="text-sm text-destructive mt-1">{formErrors.phone}</p>
+                            )}
+                          </div>
+                        </div>
+
+                        <div>
+                          <Label htmlFor="messenger">Мессенджер для связи</Label>
+                          <Select value={formData.messenger} onValueChange={(value) => handleInputChange('messenger', value)}>
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="telegram">Telegram</SelectItem>
+                              <SelectItem value="whatsapp">WhatsApp</SelectItem>
+                              <SelectItem value="phone">Звонок</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div>
+                          <Label htmlFor="service">Услуга *</Label>
+                          <Select 
+                            value={formData.service} 
+                            onValueChange={(value) => {
+                              handleInputChange('service', value);
+                              handleServiceSelect(value);
+                            }}
+                          >
+                            <SelectTrigger className={formErrors.service ? 'border-destructive' : ''}>
+                              <SelectValue placeholder="Выберите услугу" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {services.map((service) => (
+                                <SelectItem key={service.id} value={service.id}>
+                                  {service.title} — {service.priceText}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          {formErrors.service && (
+                            <p className="text-sm text-destructive mt-1">{formErrors.service}</p>
+                          )}
+                        </div>
+
+                        {/* Price Calculator */}
+                        {selectedService && (
+                          <Card className="bg-slate-50 border-primary/20">
+                            <CardHeader className="pb-3">
+                              <CardTitle className="text-base font-sans">Калькулятор стоимости</CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                              <div>
+                                <Label>Приоритет</Label>
+                                <RadioGroup 
+                                  value={selectedPriority} 
+                                  onValueChange={handlePriorityChange}
+                                  className="mt-2"
+                                >
+                                  <div className="flex items-center space-x-2">
+                                    <RadioGroupItem value="normal" id="normal" />
+                                    <Label htmlFor="normal">Обычный (в течение дня)</Label>
+                                  </div>
+                                  <div className="flex items-center space-x-2">
+                                    <RadioGroupItem value="urgent" id="urgent" />
+                                    <Label htmlFor="urgent">Срочный (+1000 ₽)</Label>
+                                  </div>
+                                </RadioGroup>
+                              </div>
+
+                              <div className="flex items-center space-x-2">
+                                <Checkbox
+                                  id="urgentConsult"
+                                  checked={formData.urgentConsultation}
+                                  onCheckedChange={handleUrgentToggle}
+                                />
+                                <Label htmlFor="urgentConsult">
+                                  Консультация в течение часа (+500 ₽)
+                                </Label>
+                              </div>
+
+                              <div className="pt-3 border-t">
+                                <div className="flex justify-between items-center">
+                                  <span className="font-semibold">Итого:</span>
+                                  <span className="text-2xl font-bold text-primary">
+                                    {calculatedPrice.toLocaleString()} ₽
+                                  </span>
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        )}
+
+                        <div>
+                          <Label htmlFor="message">Дополнительная информация</Label>
+                          <Textarea
+                            id="message"
+                            value={formData.message}
+                            onChange={(e) => handleInputChange('message', e.target.value)}
+                            placeholder="Расскажите о своей ситуации..."
+                            rows={3}
+                          />
+                        </div>
+
+                        <div className="flex gap-3">
+                          <Button type="submit" className="flex-1 bg-primary hover:bg-primary/90">
+                            <Icon name="Send" size={16} className="mr-2" />
+                            Отправить заявку
+                          </Button>
+                        </div>
+                      </form>
+                    </DialogContent>
+                  </Dialog>
                 </CardContent>
               </Card>
             ))}
@@ -368,14 +726,137 @@ const Index = () => {
               5 минут консультации — и вы узнаете, что делать дальше
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" className="bg-white text-primary hover:bg-gray-50 text-lg px-8 py-4">
-                <Icon name="MessageSquare" size={20} className="mr-2" />
-                Написать в WhatsApp
-              </Button>
-              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-primary text-lg px-8 py-4">
-                <Icon name="Send" size={20} className="mr-2" />
-                Написать в Telegram
-              </Button>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button size="lg" className="bg-white text-primary hover:bg-gray-50 text-lg px-8 py-4">
+                    <Icon name="MessageSquare" size={20} className="mr-2" />
+                    Написать в WhatsApp
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[500px]">
+                  <DialogHeader>
+                    <DialogTitle className="font-sans">Связаться с нами</DialogTitle>
+                    <DialogDescription>
+                      Оставьте заявку, и мы свяжемся с вами в WhatsApp в течение 15 минут
+                    </DialogDescription>
+                  </DialogHeader>
+
+                  <form onSubmit={handleSubmit} className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="cta-name">Имя *</Label>
+                        <Input
+                          id="cta-name"
+                          value={formData.name}
+                          onChange={(e) => handleInputChange('name', e.target.value)}
+                          className={formErrors.name ? 'border-destructive' : ''}
+                          placeholder="Ваше имя"
+                        />
+                        {formErrors.name && (
+                          <p className="text-sm text-destructive mt-1">{formErrors.name}</p>
+                        )}
+                      </div>
+                      <div>
+                        <Label htmlFor="cta-phone">WhatsApp *</Label>
+                        <Input
+                          id="cta-phone"
+                          value={formData.phone}
+                          onChange={(e) => handleInputChange('phone', e.target.value)}
+                          className={formErrors.phone ? 'border-destructive' : ''}
+                          placeholder="+7 999 123-45-67"
+                        />
+                        {formErrors.phone && (
+                          <p className="text-sm text-destructive mt-1">{formErrors.phone}</p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="cta-message">Ваш вопрос</Label>
+                      <Textarea
+                        id="cta-message"
+                        value={formData.message}
+                        onChange={(e) => handleInputChange('message', e.target.value)}
+                        placeholder="Что вас беспокоит? Опишите ситуацию..."
+                        rows={3}
+                      />
+                    </div>
+
+                    <div className="flex gap-3">
+                      <Button type="submit" className="flex-1 bg-primary hover:bg-primary/90">
+                        <Icon name="Send" size={16} className="mr-2" />
+                        Отправить в WhatsApp
+                      </Button>
+                    </div>
+                  </form>
+                </DialogContent>
+              </Dialog>
+              
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-primary text-lg px-8 py-4">
+                    <Icon name="Send" size={20} className="mr-2" />
+                    Написать в Telegram
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[500px]">
+                  <DialogHeader>
+                    <DialogTitle className="font-sans">Связаться в Telegram</DialogTitle>
+                    <DialogDescription>
+                      Оставьте заявку для связи в Telegram
+                    </DialogDescription>
+                  </DialogHeader>
+
+                  <form onSubmit={handleSubmit} className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="tg-name">Имя *</Label>
+                        <Input
+                          id="tg-name"
+                          value={formData.name}
+                          onChange={(e) => handleInputChange('name', e.target.value)}
+                          className={formErrors.name ? 'border-destructive' : ''}
+                          placeholder="Ваше имя"
+                        />
+                        {formErrors.name && (
+                          <p className="text-sm text-destructive mt-1">{formErrors.name}</p>
+                        )}
+                      </div>
+                      <div>
+                        <Label htmlFor="tg-phone">Telegram *</Label>
+                        <Input
+                          id="tg-phone"
+                          value={formData.phone}
+                          onChange={(e) => handleInputChange('phone', e.target.value)}
+                          className={formErrors.phone ? 'border-destructive' : ''}
+                          placeholder="@username или телефон"
+                        />
+                        {formErrors.phone && (
+                          <p className="text-sm text-destructive mt-1">{formErrors.phone}</p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="tg-message">Ваш вопрос</Label>
+                      <Textarea
+                        id="tg-message"
+                        value={formData.message}
+                        onChange={(e) => handleInputChange('message', e.target.value)}
+                        placeholder="Что вас беспокоит? Опишите ситуацию..."
+                        rows={3}
+                      />
+                    </div>
+
+                    <div className="flex gap-3">
+                      <Button type="submit" className="flex-1 bg-primary hover:bg-primary/90">
+                        <Icon name="Send" size={16} className="mr-2" />
+                        Отправить в Telegram
+                      </Button>
+                    </div>
+                  </form>
+                </DialogContent>
+              </Dialog>
             </div>
           </div>
         </div>
