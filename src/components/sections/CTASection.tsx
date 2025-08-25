@@ -104,65 +104,7 @@ const CTASection: React.FC<CTASectionProps> = ({
               <Icon name="Send" size={20} className="mr-2" />
               Написать в Telegram
             </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[500px]">
-                <DialogHeader>
-                  <DialogTitle className="font-sans">Связаться в Telegram</DialogTitle>
-                  <DialogDescription>
-                    Оставьте заявку для связи в Telegram
-                  </DialogDescription>
-                </DialogHeader>
 
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="tg-name">Имя *</Label>
-                      <Input
-                        id="tg-name"
-                        value={formData.name}
-                        onChange={(e) => handleInputChange('name', e.target.value)}
-                        className={formErrors.name ? 'border-destructive' : ''}
-                        placeholder="Ваше имя"
-                      />
-                      {formErrors.name && (
-                        <p className="text-sm text-destructive mt-1">{formErrors.name}</p>
-                      )}
-                    </div>
-                    <div>
-                      <Label htmlFor="tg-phone">Telegram *</Label>
-                      <Input
-                        id="tg-phone"
-                        value={formData.phone}
-                        onChange={(e) => handleInputChange('phone', e.target.value)}
-                        className={formErrors.phone ? 'border-destructive' : ''}
-                        placeholder="@username или телефон"
-                      />
-                      {formErrors.phone && (
-                        <p className="text-sm text-destructive mt-1">{formErrors.phone}</p>
-                      )}
-                    </div>
-                  </div>
-
-                  <div>
-                    <Label htmlFor="tg-message">Ваш вопрос</Label>
-                    <Textarea
-                      id="tg-message"
-                      value={formData.message}
-                      onChange={(e) => handleInputChange('message', e.target.value)}
-                      placeholder="Что вас беспокоит? Опишите ситуацию..."
-                      rows={3}
-                    />
-                  </div>
-
-                  <div className="flex gap-3">
-                    <Button type="submit" className="flex-1 bg-primary hover:bg-primary/90">
-                      <Icon name="Send" size={16} className="mr-2" />
-                      Отправить в Telegram
-                    </Button>
-                  </div>
-                </form>
-              </DialogContent>
-            </Dialog>
           </div>
         </div>
       </div>
