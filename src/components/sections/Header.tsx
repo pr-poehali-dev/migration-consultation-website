@@ -36,102 +36,26 @@ const Header: React.FC<HeaderProps> = ({
           <Dialog>
             <DialogTrigger asChild>
               <Button className="bg-primary hover:bg-primary/90">
-                <Icon name="MessageCircle" size={18} className="mr-2" />
-                Консультация
+                <Icon name="Bot" size={18} className="mr-2" />
+                ИИ Консультант
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[500px]">
+            <DialogContent className="sm:max-w-[800px] sm:max-h-[600px]">
               <DialogHeader>
-                <DialogTitle className="font-sans">Быстрая консультация</DialogTitle>
+                <DialogTitle className="font-sans">ИИ Консультант по миграции</DialogTitle>
                 <DialogDescription>
-                  Заполните форму, и мы свяжемся с вами в течение 15 минут
+                  Получите мгновенные ответы на ваши вопросы от нашего ИИ агента
                 </DialogDescription>
               </DialogHeader>
 
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="header-name">Имя *</Label>
-                    <Input
-                      id="header-name"
-                      value={formData.name}
-                      onChange={(e) => handleInputChange('name', e.target.value)}
-                      className={formErrors.name ? 'border-destructive' : ''}
-                      placeholder="Ваше имя"
-                    />
-                    {formErrors.name && (
-                      <p className="text-sm text-destructive mt-1">{formErrors.name}</p>
-                    )}
-                  </div>
-                  <div>
-                    <Label htmlFor="header-phone">Телефон *</Label>
-                    <Input
-                      id="header-phone"
-                      value={formData.phone}
-                      onChange={(e) => handleInputChange('phone', e.target.value)}
-                      className={formErrors.phone ? 'border-destructive' : ''}
-                      placeholder="+7 999 123-45-67"
-                    />
-                    {formErrors.phone && (
-                      <p className="text-sm text-destructive mt-1">{formErrors.phone}</p>
-                    )}
-                  </div>
-                </div>
-
-                <div>
-                  <Label htmlFor="header-messenger">Мессенджер для связи</Label>
-                  <Select value={formData.messenger} onValueChange={(value) => handleInputChange('messenger', value)}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="telegram">Telegram</SelectItem>
-                      <SelectItem value="whatsapp">WhatsApp</SelectItem>
-                      <SelectItem value="phone">Звонок</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <Label htmlFor="header-service">Что вас интересует?</Label>
-                  <Select 
-                    value={formData.service} 
-                    onValueChange={(value) => {
-                      handleInputChange('service', value);
-                      handleServiceSelect(value);
-                    }}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Выберите услугу" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {services.map((service) => (
-                        <SelectItem key={service.id} value={service.id}>
-                          {service.title}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <Label htmlFor="header-message">Ваша ситуация</Label>
-                  <Textarea
-                    id="header-message"
-                    value={formData.message}
-                    onChange={(e) => handleInputChange('message', e.target.value)}
-                    placeholder="Кратко опишите что произошло..."
-                    rows={3}
-                  />
-                </div>
-
-                <div className="flex gap-3">
-                  <Button type="submit" className="flex-1 bg-primary hover:bg-primary/90">
-                    <Icon name="Send" size={16} className="mr-2" />
-                    Получить консультацию
-                  </Button>
-                </div>
-              </form>
+              <div className="w-full h-[500px] border rounded-lg overflow-hidden">
+                <iframe 
+                  allow="microphone;autoplay" 
+                  style={{width: '100%', height: '100%', border: 'none'}}
+                  src="https://functions.pro-talk.ru/api/v1.0/chatgpt_widget_dialog_api?record_id=recYnAPYvshTKXGtV&promt_id=33618&lang=ru&fullscreen=0&voice=1&file=1&circle=1"
+                  title="ИИ Консультант по миграции"
+                />
+              </div>
             </DialogContent>
           </Dialog>
         </div>
