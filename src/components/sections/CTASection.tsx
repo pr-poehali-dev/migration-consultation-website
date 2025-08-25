@@ -96,12 +96,14 @@ const CTASection: React.FC<CTASectionProps> = ({
               </DialogContent>
             </Dialog>
             
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-primary text-lg px-8 py-4">
-                  <Icon name="Send" size={20} className="mr-2" />
-                  Написать в Telegram
-                </Button>
+            <Button 
+              size="lg" 
+              className="bg-blue-600 text-white hover:bg-blue-700 text-lg px-8 py-4"
+              onClick={() => window.open('https://t.me/migracia_bot', '_blank')}
+            >
+              <Icon name="Send" size={20} className="mr-2" />
+              Написать в Telegram
+            </Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-[500px]">
                 <DialogHeader>
