@@ -35,10 +35,7 @@ const Header: React.FC<HeaderProps> = ({
           
           <Dialog>
             <DialogTrigger asChild>
-              <Button className="bg-primary hover:bg-primary/90">
-                <Icon name="Bot" size={18} className="mr-2" />
-                ИИ Консультант
-              </Button>
+              <Button className="bg-primary hover:bg-primary/90">Консультант 24/7</Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[800px] sm:max-h-[600px]">
               <DialogHeader>
