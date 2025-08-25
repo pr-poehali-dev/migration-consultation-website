@@ -144,8 +144,13 @@ const HeroSection: React.FC<HeroSectionProps> = ({
               </DialogContent>
             </Dialog>
             
-            <Button size="lg" variant="outline" className="text-lg px-8 py-4">
-              <Icon name="Clock" size={20} className="mr-2" />
+            <Button 
+              size="lg" 
+              variant="outline" 
+              className="text-lg px-8 py-4"
+              onClick={() => window.open('https://functions.pro-talk.ru/api/v1.0/chatgpt_widget_dialog_api?record_id=recYnAPYvshTKXGtV&promt_id=33618&lang=ru&fullscreen=1&voice=1&file=1&circle=1', '_blank')}
+            >
+              <Icon name="Bot" size={20} className="mr-2" />
               5 минут — узнаете что делать
             </Button>
           </div>
