@@ -60,8 +60,23 @@ const ServicesSection: React.FC<ServicesSectionProps> = ({
     'Срочный адвокат': 'Экстренная правовая защита 24/7 • 20 000₽'
   };
 
-  const renderServiceCard = (service: any) => (
-    <Card key={service.id} className={`relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 ${service.urgent ? 'border-accent shadow-accent/20' : ''}`}>
+  const renderServiceCard = (service: any) => {
+    const categoryBorders = {
+      'РВП': 'border-l-4 border-l-green-500',
+      'ВНЖ': 'border-l-4 border-l-blue-500',
+      'Гражданство': 'border-l-4 border-l-yellow-500',
+      'Срочный адвокат': 'border-l-4 border-l-red-500'
+    };
+    
+    const categoryBadges = {
+      'РВП': 'bg-green-100 text-green-800',
+      'ВНЖ': 'bg-blue-100 text-blue-800',  
+      'Гражданство': 'bg-yellow-100 text-yellow-800',
+      'Срочный адвокат': 'bg-red-100 text-red-800'
+    };
+    
+    return (
+      <Card key={service.id} className={`relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 ${categoryBorders[service.category as keyof typeof categoryBorders]} ${service.urgent ? 'border-accent shadow-accent/20' : ''}`}>
       {service.urgent && (
         <div className="absolute top-0 right-0">
           <Badge className="bg-accent text-accent-foreground rounded-l-none rounded-br-none">
@@ -70,6 +85,11 @@ const ServicesSection: React.FC<ServicesSectionProps> = ({
         </div>
       )}
       <CardHeader>
+        <div className="flex items-start justify-between mb-2">
+          <Badge className={`text-xs ${categoryBadges[service.category as keyof typeof categoryBadges]} mb-2`}>
+            {service.category}
+          </Badge>
+        </div>
         <CardTitle className="text-lg leading-tight mb-2 font-sans">
           {service.title}
         </CardTitle>
@@ -207,6 +227,7 @@ const ServicesSection: React.FC<ServicesSectionProps> = ({
       </CardContent>
     </Card>
   );
+  };
 
   return (
     <section className="py-16 bg-slate-50">
@@ -221,13 +242,26 @@ const ServicesSection: React.FC<ServicesSectionProps> = ({
         </div>
 
         <Tabs defaultValue="РВП" className="max-w-7xl mx-auto">
-          <TabsList className="grid w-full grid-cols-4 mb-8">
-            {Object.keys(serviceCategories).map((category) => (
-              <TabsTrigger key={category} value={category} className="text-sm">
-                <Icon name={categoryIcons[category as keyof typeof categoryIcons]} size={16} className="mr-2" />
-                {category}
-              </TabsTrigger>
-            ))}
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 gap-2 mb-8 p-2 h-auto bg-white shadow-sm">
+            {Object.keys(serviceCategories).map((category) => {
+              const categoryColors = {
+                'РВП': 'data-[state=active]:bg-green-100 data-[state=active]:text-green-800 data-[state=active]:border-green-300 hover:bg-green-50',
+                'ВНЖ': 'data-[state=active]:bg-blue-100 data-[state=active]:text-blue-800 data-[state=active]:border-blue-300 hover:bg-blue-50',
+                'Гражданство': 'data-[state=active]:bg-yellow-100 data-[state=active]:text-yellow-800 data-[state=active]:border-yellow-300 hover:bg-yellow-50',
+                'Срочный адвокат': 'data-[state=active]:bg-red-100 data-[state=active]:text-red-800 data-[state=active]:border-red-300 hover:bg-red-50'
+              };
+              
+              return (
+                <TabsTrigger 
+                  key={category} 
+                  value={category} 
+                  className={`text-xs sm:text-sm p-3 sm:p-4 h-auto flex-col sm:flex-row gap-1 sm:gap-2 border-2 border-transparent transition-all ${categoryColors[category as keyof typeof categoryColors]}`}
+                >
+                  <Icon name={categoryIcons[category as keyof typeof categoryIcons]} size={16} className="" />
+                  <span className="font-medium">{category}</span>
+                </TabsTrigger>
+              );
+            })}
           </TabsList>
           
           {Object.entries(serviceCategories).map(([category, categoryServices]) => (
