@@ -1,14 +1,24 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://migration-consultation-website.poehali.dev/sitemap.xml
+
+# Crawl delay for bots
+Crawl-delay: 1
+
+# Allow all major search engines
 User-agent: Googlebot
 Allow: /
 
-User-agent: Bingbot
+User-agent: Yandex
+Allow: /
+
+User-agent: Bingbot  
 Allow: /
 
 User-agent: Twitterbot
 Allow: /
 
 User-agent: facebookexternalhit
-Allow: /
-
-User-agent: *
 Allow: /

@@ -33,12 +33,11 @@ const HeroSection: React.FC<HeroSectionProps> = ({
             Помогли более 500 иностранцам
           </Badge>
           <h1 className="text-4xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight font-sans">
-            Миграция в России:
-            <span className="block text-primary">сделайте всё сами</span>
+            Миграционные услуги в Екатеринбурге:
+            <span className="block text-primary">РВП, ВНЖ, Гражданство РФ</span>
           </h1>
           <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-            Мы покажем как. Консультация по WhatsApp/Telegram. 
-            Пошаговый план за 24 часа. Без риска. Без посредников.
+            Получение документов для легализации в России. Консультации опытных юристов по патентам, РВП, виду на жительство и гражданству. Пошаговые планы за 24 часа. Работаем только в Свердловской области.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">

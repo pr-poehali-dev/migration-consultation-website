@@ -9,6 +9,7 @@ import TestimonialsSection from '@/components/sections/TestimonialsSection';
 import FAQSection from '@/components/sections/FAQSection';
 import CTASection from '@/components/sections/CTASection';
 import Footer from '@/components/sections/Footer';
+import Breadcrumbs from '@/components/ui/breadcrumbs';
 
 const Index = () => {
   const { toast } = useToast();
@@ -321,35 +322,47 @@ const Index = () => {
     handleSubmit
   };
 
+  const breadcrumbItems = [
+    { label: 'Главная', href: '/', current: true }
+  ];
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white font-body">
       <Header {...commonProps} />
       
-      <HeroSection {...commonProps} />
+      <nav className="container mx-auto px-4 pt-4">
+        <Breadcrumbs items={breadcrumbItems} />
+      </nav>
       
-      <ServicesSection 
-        {...commonProps}
-        selectedService={selectedService}
-        selectedPriority={selectedPriority}
-        calculatedPrice={calculatedPrice}
-        handlePriorityChange={handlePriorityChange}
-        handleUrgentToggle={handleUrgentToggle}
-      />
-      
-      <HowItWorksSection />
-      
-      <WhyUsSection />
-      
-      <TestimonialsSection />
-      
-      <FAQSection />
-      
-      <CTASection 
-        formData={formData}
-        formErrors={formErrors}
-        handleInputChange={handleInputChange}
-        handleSubmit={handleSubmit}
-      />
+      <main>
+        <HeroSection {...commonProps} />
+        
+        <ServicesSection 
+          {...commonProps}
+          selectedService={selectedService}
+          selectedPriority={selectedPriority}
+          calculatedPrice={calculatedPrice}
+          handlePriorityChange={handlePriorityChange}
+          handleUrgentToggle={handleUrgentToggle}
+        />
+        
+        <HowItWorksSection />
+        
+        <aside>
+          <WhyUsSection />
+        </aside>
+        
+        <TestimonialsSection />
+        
+        <FAQSection />
+        
+        <CTASection 
+          formData={formData}
+          formErrors={formErrors}
+          handleInputChange={handleInputChange}
+          handleSubmit={handleSubmit}
+        />
+      </main>
       
       <Footer />
     </div>
