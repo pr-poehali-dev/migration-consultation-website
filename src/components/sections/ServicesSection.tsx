@@ -42,10 +42,10 @@ const ServicesSection: React.FC<ServicesSectionProps> = ({
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4 font-sans">
-            Услуги (только консультации)
+            Миграционные услуги в Свердловской области
           </h2>
           <p className="text-lg text-gray-600">
-            Выберите подходящую консультацию для вашей ситуации
+            РВП • ВНЖ • Гражданство • Срочная помощь адвоката
           </p>
         </div>
 
