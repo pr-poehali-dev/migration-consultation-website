@@ -43,7 +43,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
             <Dialog>
               <DialogTrigger asChild>
-                <Button size="lg" className="bg-primary hover:bg-primary/90 text-lg px-8 py-4">
+                <Button size="lg" className="bg-primary hover:bg-primary/90 text-lg px-8 py-4" onClick={() => window.open('https://functions.pro-talk.ru/api/v1.0/chatgpt_widget_dialog_api?record_id=recYnAPYvshTKXGtV&promt_id=33618&lang=ru&fullscreen=1&voice=1&file=1&circle=1', '_blank')}>
                   <Icon name="MessageSquare" size={20} className="mr-2" />
                   Получить консультацию
                 </Button>
@@ -134,8 +134,8 @@ const HeroSection: React.FC<HeroSectionProps> = ({
                   </div>
 
                   <div className="flex gap-3">
-                    <Button type="submit" className="flex-1 bg-primary hover:bg-primary/90">
-                      <Icon name="Send" size={16} className="mr-2" />
+                    <Button type="button" className="flex-1 bg-primary hover:bg-primary/90" onClick={() => window.open('https://functions.pro-talk.ru/api/v1.0/chatgpt_widget_dialog_api?record_id=recYnAPYvshTKXGtV&promt_id=33618&lang=ru&fullscreen=1&voice=1&file=1&circle=1', '_blank')}>
+                      <Icon name="Bot" size={16} className="mr-2" />
                       Получить консультацию
                     </Button>
                   </div>
