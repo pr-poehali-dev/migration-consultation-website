@@ -106,49 +106,30 @@ export const useFormLogic = () => {
     const serviceTitle = selectedServiceObj ? selectedServiceObj.title : formData.service;
 
     try {
-      // Попытка отправки через backend
-      const response = await fetch('https://functions.poehali.dev/de88ac79-adac-4fb5-a2a7-30f8061abbd7', {
+      // Отправка в Telegram
+      const response = await fetch('https://functions.poehali.dev/a9299a8a-df29-4247-808f-4903c8fb7c42', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           ...formData,
-          service: serviceTitle
+          service: serviceTitle,
+          price: calculatedPrice,
+          timestamp: new Date().toLocaleString('ru-RU')
         })
       });
 
       const result = await response.json();
 
       if (response.ok && result.success) {
-        // Дублируем заявку в Telegram (без ожидания результата)
-        const sendToTelegram = async () => {
-          try {
-            await fetch('https://functions.poehali.dev/a9299a8a-df29-4247-808f-4903c8fb7c42', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                ...formData,
-                service: serviceTitle,
-                price: calculatedPrice,
-                timestamp: new Date().toLocaleString('ru-RU')
-              })
-            });
-          } catch (error) {
-            console.log('Telegram notification failed:', error);
-          }
-        };
-        sendToTelegram();
-
-        // Успешная автоматическая отправка
+        // Успешная отправка в Telegram
         if (window.lptWg && window.lptWg.push) {
           window.lptWg.push(['event', 'form_submit_success', {
             service: serviceTitle,
             urgentConsultation: formData.urgentConsultation,
             price: calculatedPrice,
-            method: 'backend'
+            method: 'telegram'
           }]);
         }
 
@@ -171,87 +152,10 @@ export const useFormLogic = () => {
         return;
       }
       
-      // Если backend вернул ошибку лимита (402) - используем mailto
-      if (response.status === 402) {
-        throw new Error('LIMIT_EXCEEDED');
-      }
-      
-      throw new Error(result.error || 'Ошибка сервера');
+      throw new Error(result.error || 'Ошибка отправки в Telegram');
       
     } catch (error) {
-      // Если ошибка лимита - используем mailto как fallback
-      if (error.message === 'LIMIT_EXCEEDED' || error.message.includes('лимит')) {
-        const urgentText = formData.urgentConsultation ? "ДА (срочная)" : "Нет";
-        const emailBody = `Новая заявка с сайта миграционных услуг
-
-Клиент: ${formData.name}
-Телефон: ${formData.phone}
-Предпочитаемый мессенджер: ${formData.messenger}
-Услуга: ${serviceTitle}
-Срочная консультация: ${urgentText}
-Стоимость: ${calculatedPrice} ₽
-
-Сообщение:
-${formData.message || 'Не указано'}
-
----
-Время: ${new Date().toLocaleString('ru-RU')}`;
-
-        const mailtoLink = `mailto:89126994560@mail.ru?subject=${encodeURIComponent(`Новая заявка: ${serviceTitle}`)}&body=${encodeURIComponent(emailBody)}`;
-        window.location.href = mailtoLink;
-        
-        setTimeout(() => {
-          // Дублируем заявку в Telegram (без ожидания результата)
-          const sendToTelegram = async () => {
-            try {
-              await fetch('https://functions.poehali.dev/a9299a8a-df29-4247-808f-4903c8fb7c42', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                  ...formData,
-                  service: serviceTitle,
-                  price: calculatedPrice,
-                  timestamp: new Date().toLocaleString('ru-RU')
-                })
-              });
-            } catch (error) {
-              console.log('Telegram notification failed:', error);
-            }
-          };
-          sendToTelegram();
-
-          if (window.lptWg && window.lptWg.push) {
-            window.lptWg.push(['event', 'form_submit_success', {
-              service: serviceTitle,
-              urgentConsultation: formData.urgentConsultation,
-              price: calculatedPrice,
-              method: 'mailto'
-            }]);
-          }
-
-          toast({
-            title: "Заявка готова к отправке!",
-            description: "Ваша заявка открылась в почтовом клиенте. Нажмите 'Отправить'.",
-          });
-
-          setFormData({
-            name: '',
-            phone: '',
-            messenger: 'telegram',
-            message: '',
-            service: '',
-            urgentConsultation: false
-          });
-          setSelectedService('');
-          setCalculatedPrice(0);
-          setFormErrors({});
-        }, 500);
-        return;
-      }
-
-      // Обычная ошибка
+      // Ошибка отправки
       if (window.lptWg && window.lptWg.push) {
         window.lptWg.push(['event', 'form_submit_error', {
           service: formData.service,
