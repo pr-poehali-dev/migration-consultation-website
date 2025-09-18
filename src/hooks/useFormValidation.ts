@@ -28,7 +28,7 @@ export interface FormErrors {
 export const useFormValidation = (initialData: FormData = {}) => {
   const [data, setData] = useState<FormData>(initialData);
   const [errors, setErrors] = useState<FormErrors>({});
-  const [touched, setTouched] = useState<{ [key: string]: boolean }>({});
+  const [touched, setTouchedState] = useState<{ [key: string]: boolean }>({});
 
   // Валидация отдельного поля
   const validateField = useCallback((
@@ -121,7 +121,7 @@ export const useFormValidation = (initialData: FormData = {}) => {
 
   // Отметка поля как тронутого
   const setTouched = useCallback((fieldName: string, isTouched = true) => {
-    setTouched(prev => ({ ...prev, [fieldName]: isTouched }));
+    setTouchedState(prev => ({ ...prev, [fieldName]: isTouched }));
   }, []);
 
   // Валидация и установка ошибок
@@ -152,7 +152,7 @@ export const useFormValidation = (initialData: FormData = {}) => {
     const resetData = newInitialData || initialData;
     setData(resetData);
     setErrors({});
-    setTouched({});
+    setTouchedState({});
   }, [initialData]);
 
   // Проверка наличия ошибок
