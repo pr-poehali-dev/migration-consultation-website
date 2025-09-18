@@ -1,31 +1,41 @@
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { services } from '@/data/servicesData';
+import { useAnalytics } from '@/hooks/useAnalytics';
+import { useApiClient } from '@/hooks/useApiClient';
+import { useFormValidation, validationRules } from '@/hooks/useFormValidation';
 
 export const useFormLogic = () => {
   const { toast } = useToast();
+  const { trackServiceSelection, trackFormSubmit, trackFormError } = useAnalytics();
+  const { post, isLoading } = useApiClient();
   const [selectedService, setSelectedService] = useState('');
   const [selectedPriority, setSelectedPriority] = useState('normal');
   const [calculatedPrice, setCalculatedPrice] = useState(0);
-  const [formData, setFormData] = useState({
+  const initialFormData = {
     name: '',
     phone: '',
     messenger: 'telegram',
     message: '',
     service: '',
     urgentConsultation: false
-  });
-  const [formErrors, setFormErrors] = useState({});
+  };
 
-  const validateForm = (data) => {
-    const errors = {};
-    if (!data.name.trim()) errors.name = 'Имя обязательно';
-    if (!data.phone.trim()) errors.phone = 'Телефон обязателен';
-    if (!data.service) errors.service = 'Выберите услугу';
-    if (data.phone && !/^[\d\s\-\+\(\)]+$/.test(data.phone)) {
-      errors.phone = 'Некорректный номер телефона';
-    }
-    return errors;
+  const { 
+    data: formData, 
+    errors: formErrors, 
+    setValue: setFormField,
+    validate,
+    reset: resetForm 
+  } = useFormValidation(initialFormData);
+
+  const formValidationRules = {
+    name: validationRules.required('Имя обязательно'),
+    phone: {
+      ...validationRules.required('Телефон обязателен'),
+      ...validationRules.phone('Некорректный номер телефона')
+    },
+    service: validationRules.required('Выберите услугу')
   };
 
   const calculatePrice = (serviceId, priority, urgentConsult) => {
@@ -41,17 +51,14 @@ export const useFormLogic = () => {
 
   const handleServiceSelect = (serviceId) => {
     setSelectedService(serviceId);
-    setFormData(prev => ({ ...prev, service: serviceId }));
+    setFormField('service', serviceId);
     const newPrice = calculatePrice(serviceId, selectedPriority, formData.urgentConsultation);
     setCalculatedPrice(newPrice);
 
-    // LPTracker событие - выбор услуги
+    // Аналитика - выбор услуги
     const selectedServiceObj = services.find(s => s.id === serviceId);
-    if (window.lptWg && window.lptWg.push && selectedServiceObj) {
-      window.lptWg.push(['event', 'service_selected', {
-        service: selectedServiceObj.title,
-        price: newPrice
-      }]);
+    if (selectedServiceObj) {
+      trackServiceSelection(selectedServiceObj.title, newPrice);
     }
   };
 
@@ -64,104 +71,66 @@ export const useFormLogic = () => {
   };
 
   const handleUrgentToggle = (checked) => {
-    setFormData(prev => ({ ...prev, urgentConsultation: checked }));
+    setFormField('urgentConsultation', checked);
     if (selectedService) {
       const newPrice = calculatePrice(selectedService, selectedPriority, checked);
       setCalculatedPrice(newPrice);
     }
-
-    // LPTracker событие - включение срочной консультации
-    if (window.lptWg && window.lptWg.push && checked) {
-      window.lptWg.push(['event', 'urgent_consultation_selected', {
-        service: selectedService
-      }]);
-    }
   };
 
   const handleInputChange = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-    if (formErrors[field]) {
-      setFormErrors(prev => ({ ...prev, [field]: '' }));
-    }
+    setFormField(field, value);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const errors = validateForm(formData);
     
-    if (Object.keys(errors).length > 0) {
-      setFormErrors(errors);
+    if (!validate(formValidationRules)) {
       return;
-    }
-
-    // LPTracker событие - начало отправки заявки
-    if (window.lptWg && window.lptWg.push) {
-      window.lptWg.push(['event', 'form_submit_start', {
-        service: formData.service,
-        urgentConsultation: formData.urgentConsultation
-      }]);
     }
 
     const selectedServiceObj = services.find(s => s.id === formData.service);
     const serviceTitle = selectedServiceObj ? selectedServiceObj.title : formData.service;
 
     try {
-      // Отправка в Telegram
-      const response = await fetch('https://functions.poehali.dev/a9299a8a-df29-4247-808f-4903c8fb7c42', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+      // Отправка в Telegram через API клиент
+      const response = await post(
+        'https://functions.poehali.dev/a9299a8a-df29-4247-808f-4903c8fb7c42',
+        {
           ...formData,
           service: serviceTitle,
           price: calculatedPrice,
           timestamp: new Date().toLocaleString('ru-RU')
-        })
-      });
+        },
+        {},
+        'telegram-submit'
+      );
 
-      const result = await response.json();
-
-      if (response.ok && result.success) {
-        // Успешная отправка в Telegram
-        if (window.lptWg && window.lptWg.push) {
-          window.lptWg.push(['event', 'form_submit_success', {
-            service: serviceTitle,
-            urgentConsultation: formData.urgentConsultation,
-            price: calculatedPrice,
-            method: 'telegram'
-          }]);
-        }
+      if (response.success) {
+        // Аналитика - успешная отправка
+        trackFormSubmit({
+          service: serviceTitle,
+          urgentConsultation: formData.urgentConsultation,
+          price: calculatedPrice,
+          method: 'telegram'
+        });
 
         toast({
           title: "Заявка отправлена!",
           description: "Мы свяжемся с вами в течение 15 минут",
         });
 
-        setFormData({
-          name: '',
-          phone: '',
-          messenger: 'telegram',
-          message: '',
-          service: '',
-          urgentConsultation: false
-        });
+        resetForm();
         setSelectedService('');
         setCalculatedPrice(0);
-        setFormErrors({});
         return;
       }
       
-      throw new Error(result.error || 'Ошибка отправки в Telegram');
+      throw new Error(response.error || 'Ошибка отправки в Telegram');
       
     } catch (error) {
-      // Ошибка отправки
-      if (window.lptWg && window.lptWg.push) {
-        window.lptWg.push(['event', 'form_submit_error', {
-          service: formData.service,
-          error: error.message
-        }]);
-      }
+      // Аналитика - ошибка отправки
+      trackFormError(error.message, 'consultation');
 
       toast({
         title: "Ошибка отправки",
@@ -177,6 +146,7 @@ export const useFormLogic = () => {
     selectedService,
     selectedPriority,
     calculatedPrice,
+    isSubmitting: isLoading('telegram-submit'),
     handleInputChange,
     handleServiceSelect,
     handlePriorityChange,
