@@ -52,6 +52,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         service = body_data.get('service', '')
         urgent_consultation = body_data.get('urgentConsultation', False)
         price = body_data.get('price', 0)
+        website = body_data.get('website', 'сайта')
         
         # Validate required fields
         if not name or not phone or not service:
@@ -86,7 +87,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         urgent_text = "🔥 СРОЧНАЯ" if urgent_consultation else "Обычная"
         price_text = f"{price} ₽" if price > 0 else "не указана"
         
-        telegram_message = f"""🆕 *Новая заявка с сайта*
+        telegram_message = f"""🆕 *Новая заявка с {website}*
 
 👤 *Клиент:* {name}
 📞 *Телефон:* `{phone}`

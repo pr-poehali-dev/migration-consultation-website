@@ -100,6 +100,7 @@ export const useFormLogic = () => {
           ...formData,
           service: serviceTitle,
           price: calculatedPrice,
+          website: 'migracia.pro',
           timestamp: new Date().toLocaleString('ru-RU')
         },
         {},
