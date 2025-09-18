@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { useLPTracker } from '@/hooks/useLPTracker';
 import Header from '@/components/sections/Header';
 import HeroSection from '@/components/sections/HeroSection';
 import ServicesSection from '@/components/sections/ServicesSection';
@@ -13,6 +14,7 @@ import Breadcrumbs from '@/components/ui/breadcrumbs';
 
 const Index = () => {
   const { toast } = useToast();
+  useLPTracker(); // Инициализация отслеживания LPTracker
   const [selectedService, setSelectedService] = useState('');
   const [selectedPriority, setSelectedPriority] = useState('normal');
   const [calculatedPrice, setCalculatedPrice] = useState(0);
@@ -261,6 +263,15 @@ const Index = () => {
     setFormData(prev => ({ ...prev, service: serviceId }));
     const newPrice = calculatePrice(serviceId, selectedPriority, formData.urgentConsultation);
     setCalculatedPrice(newPrice);
+
+    // LPTracker событие - выбор услуги
+    const selectedServiceObj = services.find(s => s.id === serviceId);
+    if (window.lptWg && window.lptWg.push && selectedServiceObj) {
+      window.lptWg.push(['event', 'service_selected', {
+        service: selectedServiceObj.title,
+        price: newPrice
+      }]);
+    }
   };
 
   const handlePriorityChange = (priority) => {
@@ -276,6 +287,13 @@ const Index = () => {
     if (selectedService) {
       const newPrice = calculatePrice(selectedService, selectedPriority, checked);
       setCalculatedPrice(newPrice);
+    }
+
+    // LPTracker событие - включение срочной консультации
+    if (window.lptWg && window.lptWg.push && checked) {
+      window.lptWg.push(['event', 'urgent_consultation_selected', {
+        service: selectedService
+      }]);
     }
   };
 
@@ -293,6 +311,14 @@ const Index = () => {
     if (Object.keys(errors).length > 0) {
       setFormErrors(errors);
       return;
+    }
+
+    // LPTracker событие - начало отправки заявки
+    if (window.lptWg && window.lptWg.push) {
+      window.lptWg.push(['event', 'form_submit_start', {
+        service: formData.service,
+        urgentConsultation: formData.urgentConsultation
+      }]);
     }
 
     try {
@@ -313,6 +339,15 @@ const Index = () => {
       const result = await response.json();
 
       if (response.ok && result.success) {
+        // LPTracker событие - успешная отправка заявки
+        if (window.lptWg && window.lptWg.push) {
+          window.lptWg.push(['event', 'form_submit_success', {
+            service: serviceTitle,
+            urgentConsultation: formData.urgentConsultation,
+            price: calculatedPrice
+          }]);
+        }
+
         toast({
           title: "Заявка отправлена!",
           description: "Мы свяжемся с вами в течение 15 минут",
@@ -333,6 +368,14 @@ const Index = () => {
         throw new Error(result.error || 'Ошибка отправки');
       }
     } catch (error) {
+      // LPTracker событие - ошибка отправки заявки
+      if (window.lptWg && window.lptWg.push) {
+        window.lptWg.push(['event', 'form_submit_error', {
+          service: formData.service,
+          error: error.message
+        }]);
+      }
+
       toast({
         title: "Ошибка отправки",
         description: "Попробуйте еще раз или свяжитесь с нами по телефону",

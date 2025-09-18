@@ -112,7 +112,18 @@ const ServicesSection: React.FC<ServicesSectionProps> = ({
           <DialogTrigger asChild>
             <Button 
               className={`w-full ${service.urgent ? 'bg-accent hover:bg-accent/90' : 'bg-primary hover:bg-primary/90'}`}
-              onClick={() => handleServiceSelect(service.id)}
+              onClick={() => {
+                handleServiceSelect(service.id);
+                // LPTracker событие - клик на кнопку услуги
+                if (window.lptWg && window.lptWg.push) {
+                  window.lptWg.push(['event', 'service_button_click', {
+                    service_title: service.title,
+                    service_category: service.category,
+                    service_price: service.priceText,
+                    urgent: service.urgent || false
+                  }]);
+                }
+              }}
             >
               <Icon name="ShoppingCart" size={16} className="mr-2" />
               Заказать

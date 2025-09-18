@@ -43,7 +43,19 @@ const HeroSection: React.FC<HeroSectionProps> = ({
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
             <Dialog>
               <DialogTrigger asChild>
-                <Button size="lg" className="bg-primary hover:bg-primary/90 text-lg px-8 py-4">
+                <Button 
+                  size="lg" 
+                  className="bg-primary hover:bg-primary/90 text-lg px-8 py-4"
+                  onClick={() => {
+                    // LPTracker событие - клик на кнопку в Hero секции
+                    if (window.lptWg && window.lptWg.push) {
+                      window.lptWg.push(['event', 'hero_button_click', {
+                        section: 'hero',
+                        button_text: 'Получить консультацию'
+                      }]);
+                    }
+                  }}
+                >
                   <Icon name="MessageSquare" size={20} className="mr-2" />
                   Получить консультацию
                 </Button>

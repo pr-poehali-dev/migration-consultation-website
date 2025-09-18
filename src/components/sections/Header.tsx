@@ -35,7 +35,19 @@ const Header: React.FC<HeaderProps> = ({
           
           <Dialog>
             <DialogTrigger asChild>
-              <Button className="bg-primary hover:bg-primary/90">Консультант 24/7</Button>
+              <Button 
+                className="bg-primary hover:bg-primary/90"
+                onClick={() => {
+                  // LPTracker событие - клик на кнопку в шапке
+                  if (window.lptWg && window.lptWg.push) {
+                    window.lptWg.push(['event', 'header_button_click', {
+                      button_text: 'Консультант 24/7'
+                    }]);
+                  }
+                }}
+              >
+                Консультант 24/7
+              </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[800px] sm:max-h-[600px]">
               <DialogHeader>

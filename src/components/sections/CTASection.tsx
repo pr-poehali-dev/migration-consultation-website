@@ -40,6 +40,15 @@ const CTASection: React.FC<CTASectionProps> = ({
                 <Button 
                   size="lg" 
                   className="bg-blue-600 text-white hover:bg-blue-700 text-lg px-8 py-4"
+                  onClick={() => {
+                    // LPTracker событие - клик на главную кнопку CTA
+                    if (window.lptWg && window.lptWg.push) {
+                      window.lptWg.push(['event', 'cta_button_click', {
+                        section: 'main_cta',
+                        button_text: 'Получить консультацию'
+                      }]);
+                    }
+                  }}
                 >
                   <Icon name="MessageSquare" size={20} className="mr-2" />
                   Получить консультацию
