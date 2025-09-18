@@ -4,7 +4,6 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from typing import Dict, Any
 import os
-import traceback
 
 def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     '''
@@ -25,6 +24,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 'Access-Control-Allow-Headers': 'Content-Type, Authorization',
                 'Access-Control-Max-Age': '86400'
             },
+            'isBase64Encoded': False,
             'body': ''
         }
     
@@ -36,15 +36,15 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 'Access-Control-Allow-Origin': '*'
             },
             'isBase64Encoded': False,
-            'body': json.dumps({'error': 'Method not allowed'}, ensure_ascii=False)
+            'body': json.dumps({'error': 'Method not allowed'})
         }
     
     try:
-        # Логируем входящий запрос для диагностики
-        print(f"Incoming request: method={method}, body={event.get('body', '{}')}")
+        print("=== EMAIL FUNCTION START ===")
         
         # Parse form data
         body_data = json.loads(event.get('body', '{}'))
+        print(f"Parsed body: {body_data}")
         
         name = body_data.get('name', '')
         phone = body_data.get('phone', '')
@@ -55,6 +55,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         
         # Validate required fields
         if not name or not phone or not service:
+            print(f"Validation failed: name={name}, phone={phone}, service={service}")
             return {
                 'statusCode': 400,
                 'headers': {
@@ -62,7 +63,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'Access-Control-Allow-Origin': '*'
                 },
                 'isBase64Encoded': False,
-                'body': json.dumps({'error': 'Заполните обязательные поля'}, ensure_ascii=False)
+                'body': json.dumps({'error': 'Заполните обязательные поля'})
             }
         
         # Get email credentials from environment
@@ -73,6 +74,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         recipient_email = '89126994560@mail.ru'
         
         if not sender_email or not sender_password:
+            print(f"Email config missing: sender_email={bool(sender_email)}, sender_password={bool(sender_password)}")
             return {
                 'statusCode': 500,
                 'headers': {
@@ -80,7 +82,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'Access-Control-Allow-Origin': '*'
                 },
                 'isBase64Encoded': False,
-                'body': json.dumps({'error': 'Email configuration missing'}, ensure_ascii=False)
+                'body': json.dumps({'error': 'Email configuration missing'})
             }
         
         # Create email message
@@ -91,8 +93,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         
         # Email body
         urgent_text = "ДА (срочная)" if urgent_consultation else "Нет"
-        email_body = f"""
-Новая заявка с сайта миграционных услуг
+        email_body = f"""Новая заявка с сайта миграционных услуг
 
 Клиент: {name}
 Телефон: {phone}
@@ -105,18 +106,20 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
 
 ---
 Заявка отправлена автоматически с сайта
-ID запроса: {context.request_id}
+ID запроса: {getattr(context, 'request_id', 'unknown')}
 """
         
         msg.attach(MIMEText(email_body, 'plain', 'utf-8'))
         
         # Send email
+        print(f"Sending email from {sender_email} to {recipient_email}")
         server = smtplib.SMTP(smtp_server, smtp_port)
         server.starttls()
         server.login(sender_email, sender_password)
         text = msg.as_string()
         server.sendmail(sender_email, recipient_email, text)
         server.quit()
+        print("Email sent successfully!")
         
         return {
             'statusCode': 200,
@@ -128,10 +131,11 @@ ID запроса: {context.request_id}
             'body': json.dumps({
                 'success': True,
                 'message': 'Заявка успешно отправлена'
-            }, ensure_ascii=False)
+            })
         }
         
-    except json.JSONDecodeError:
+    except json.JSONDecodeError as e:
+        print(f"JSON decode error: {e}")
         return {
             'statusCode': 400,
             'headers': {
@@ -139,17 +143,10 @@ ID запроса: {context.request_id}
                 'Access-Control-Allow-Origin': '*'
             },
             'isBase64Encoded': False,
-            'body': json.dumps({'error': 'Некорректные данные'}, ensure_ascii=False)
+            'body': json.dumps({'error': 'Некорректные данные'})
         }
     except Exception as e:
-        # Логируем полную ошибку для диагностики
-        error_details = {
-            'error': str(e),
-            'traceback': traceback.format_exc(),
-            'request_id': context.request_id
-        }
-        print(f"Email send error: {json.dumps(error_details, ensure_ascii=False)}")
-        
+        print(f"General error: {e}")
         return {
             'statusCode': 500,
             'headers': {
@@ -157,5 +154,5 @@ ID запроса: {context.request_id}
                 'Access-Control-Allow-Origin': '*'
             },
             'isBase64Encoded': False,
-            'body': json.dumps({'error': f'Ошибка отправки: {str(e)}'}, ensure_ascii=False)
+            'body': json.dumps({'error': f'Ошибка отправки: {str(e)}'})
         }
