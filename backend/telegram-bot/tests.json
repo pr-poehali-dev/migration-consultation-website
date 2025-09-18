@@ -1,0 +1,31 @@
+{
+  "tests": [
+    {
+      "name": "Test telegram notification",
+      "method": "POST",
+      "body": {
+        "name": "Анна Смирнова",
+        "phone": "+7 923 456 78 90",
+        "messenger": "whatsapp",
+        "service": "Консультация по ВНЖ",
+        "message": "Срочно нужна помощь с документами",
+        "urgentConsultation": true,
+        "price": 5000,
+        "timestamp": "2024-12-18 15:30:00"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "success": "boolean",
+        "message": "string"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Test OPTIONS request",
+      "method": "OPTIONS",
+      "expectedStatus": 200,
+      "expectedBody": "",
+      "bodyMatcher": "exact"
+    }
+  ]
+}

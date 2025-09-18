@@ -340,6 +340,27 @@ const Index = () => {
       const result = await response.json();
 
       if (response.ok && result.success) {
+        // Дублируем заявку в Telegram (без ожидания результата)
+        const sendToTelegram = async () => {
+          try {
+            await fetch('https://functions.poehali.dev/a9299a8a-df29-4247-808f-4903c8fb7c42', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                ...formData,
+                service: serviceTitle,
+                price: calculatedPrice,
+                timestamp: new Date().toLocaleString('ru-RU')
+              })
+            });
+          } catch (error) {
+            console.log('Telegram notification failed:', error);
+          }
+        };
+        sendToTelegram();
+
         // Успешная автоматическая отправка
         if (window.lptWg && window.lptWg.push) {
           window.lptWg.push(['event', 'form_submit_success', {
@@ -399,6 +420,27 @@ ${formData.message || 'Не указано'}
         window.location.href = mailtoLink;
         
         setTimeout(() => {
+          // Дублируем заявку в Telegram (без ожидания результата)
+          const sendToTelegram = async () => {
+            try {
+              await fetch('https://functions.poehali.dev/a9299a8a-df29-4247-808f-4903c8fb7c42', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  ...formData,
+                  service: serviceTitle,
+                  price: calculatedPrice,
+                  timestamp: new Date().toLocaleString('ru-RU')
+                })
+              });
+            } catch (error) {
+              console.log('Telegram notification failed:', error);
+            }
+          };
+          sendToTelegram();
+
           if (window.lptWg && window.lptWg.push) {
             window.lptWg.push(['event', 'form_submit_success', {
               service: serviceTitle,
