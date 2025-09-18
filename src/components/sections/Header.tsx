@@ -52,10 +52,7 @@ const Header: React.FC<HeaderProps> = ({
             </DialogTrigger>
             <DialogContent className="sm:max-w-[900px] sm:max-h-[700px] p-0">
               <DialogHeader className="px-6 pt-6 pb-4">
-                <DialogTitle className="font-sans flex items-center gap-2">
-                  <Icon name="Bot" size={24} className="text-primary" />
-                  ИИ Консультант по миграции
-                </DialogTitle>
+                <DialogTitle className="font-sans flex items-center gap-2">Консультант по миграции</DialogTitle>
                 <DialogDescription>Получите ответы на ваши вопросы  - КРУГЛОСУТОЧНО!</DialogDescription>
               </DialogHeader>
 
