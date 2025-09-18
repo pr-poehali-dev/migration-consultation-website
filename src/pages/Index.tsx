@@ -324,21 +324,32 @@ const Index = () => {
     try {
       const selectedServiceObj = services.find(s => s.id === formData.service);
       const serviceTitle = selectedServiceObj ? selectedServiceObj.title : formData.service;
+      
+      // Формируем текст заявки
+      const urgentText = formData.urgentConsultation ? "ДА (срочная)" : "Нет";
+      const emailBody = `Новая заявка с сайта миграционных услуг
 
-      const response = await fetch('https://functions.poehali.dev/de88ac79-adac-4fb5-a2a7-30f8061abbd7', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...formData,
-          service: serviceTitle
-        })
-      });
+Клиент: ${formData.name}
+Телефон: ${formData.phone}
+Предпочитаемый мессенджер: ${formData.messenger}
+Услуга: ${serviceTitle}
+Срочная консультация: ${urgentText}
+Стоимость: ${calculatedPrice} ₽
 
-      const result = await response.json();
+Сообщение:
+${formData.message || 'Не указано'}
 
-      if (response.ok && result.success) {
+---
+Время: ${new Date().toLocaleString('ru-RU')}`;
+
+      // Создаем mailto ссылку для отправки заявки
+      const mailtoLink = `mailto:89126994560@mail.ru?subject=${encodeURIComponent(`Новая заявка: ${serviceTitle}`)}&body=${encodeURIComponent(emailBody)}`;
+      
+      // Открываем почтовый клиент
+      window.location.href = mailtoLink;
+      
+      // Даем время на открытие почтового клиента
+      setTimeout(() => {
         // LPTracker событие - успешная отправка заявки
         if (window.lptWg && window.lptWg.push) {
           window.lptWg.push(['event', 'form_submit_success', {
@@ -349,8 +360,8 @@ const Index = () => {
         }
 
         toast({
-          title: "Заявка отправлена!",
-          description: "Мы свяжемся с вами в течение 15 минут",
+          title: "Заявка готова к отправке!",
+          description: "Ваша заявка открылась в почтовом клиенте. Нажмите 'Отправить' для завершения.",
         });
 
         setFormData({
@@ -364,9 +375,8 @@ const Index = () => {
         setSelectedService('');
         setCalculatedPrice(0);
         setFormErrors({});
-      } else {
-        throw new Error(result.error || 'Ошибка отправки');
-      }
+      }, 500);
+      
     } catch (error) {
       // LPTracker событие - ошибка отправки заявки
       if (window.lptWg && window.lptWg.push) {

@@ -4,6 +4,7 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from typing import Dict, Any
 import os
+import traceback
 
 def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     '''
@@ -30,11 +31,18 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     if method != 'POST':
         return {
             'statusCode': 405,
-            'headers': {'Access-Control-Allow-Origin': '*'},
-            'body': json.dumps({'error': 'Method not allowed'})
+            'headers': {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+            },
+            'isBase64Encoded': False,
+            'body': json.dumps({'error': 'Method not allowed'}, ensure_ascii=False)
         }
     
     try:
+        # Логируем входящий запрос для диагностики
+        print(f"Incoming request: method={method}, body={event.get('body', '{}')}")
+        
         # Parse form data
         body_data = json.loads(event.get('body', '{}'))
         
@@ -49,8 +57,12 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         if not name or not phone or not service:
             return {
                 'statusCode': 400,
-                'headers': {'Access-Control-Allow-Origin': '*'},
-                'body': json.dumps({'error': 'Заполните обязательные поля'})
+                'headers': {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*'
+                },
+                'isBase64Encoded': False,
+                'body': json.dumps({'error': 'Заполните обязательные поля'}, ensure_ascii=False)
             }
         
         # Get email credentials from environment
@@ -63,8 +75,12 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         if not sender_email or not sender_password:
             return {
                 'statusCode': 500,
-                'headers': {'Access-Control-Allow-Origin': '*'},
-                'body': json.dumps({'error': 'Email configuration missing'})
+                'headers': {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*'
+                },
+                'isBase64Encoded': False,
+                'body': json.dumps({'error': 'Email configuration missing'}, ensure_ascii=False)
             }
         
         # Create email message
@@ -108,21 +124,38 @@ ID запроса: {context.request_id}
                 'Content-Type': 'application/json',
                 'Access-Control-Allow-Origin': '*'
             },
+            'isBase64Encoded': False,
             'body': json.dumps({
                 'success': True,
                 'message': 'Заявка успешно отправлена'
-            })
+            }, ensure_ascii=False)
         }
         
     except json.JSONDecodeError:
         return {
             'statusCode': 400,
-            'headers': {'Access-Control-Allow-Origin': '*'},
-            'body': json.dumps({'error': 'Некорректные данные'})
+            'headers': {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+            },
+            'isBase64Encoded': False,
+            'body': json.dumps({'error': 'Некорректные данные'}, ensure_ascii=False)
         }
     except Exception as e:
+        # Логируем полную ошибку для диагностики
+        error_details = {
+            'error': str(e),
+            'traceback': traceback.format_exc(),
+            'request_id': context.request_id
+        }
+        print(f"Email send error: {json.dumps(error_details, ensure_ascii=False)}")
+        
         return {
             'statusCode': 500,
-            'headers': {'Access-Control-Allow-Origin': '*'},
-            'body': json.dumps({'error': f'Ошибка отправки: {str(e)}'})
+            'headers': {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+            },
+            'isBase64Encoded': False,
+            'body': json.dumps({'error': f'Ошибка отправки: {str(e)}'}, ensure_ascii=False)
         }
