@@ -56,9 +56,7 @@ const Header: React.FC<HeaderProps> = ({
                   <Icon name="Bot" size={24} className="text-primary" />
                   ИИ Консультант по миграции
                 </DialogTitle>
-                <DialogDescription>
-                  Получите мгновенные ответы на ваши вопросы от ИИ-помощника - КРУГЛОСУТОЧНО!
-                </DialogDescription>
+                <DialogDescription>Получите ответы на ваши вопросы  - КРУГЛОСУТОЧНО!</DialogDescription>
               </DialogHeader>
 
               <div className="h-[600px] w-full">
