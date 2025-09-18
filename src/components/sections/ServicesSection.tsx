@@ -112,12 +112,9 @@ const ServicesSection: React.FC<ServicesSectionProps> = ({
           <DialogTrigger asChild>
             <Button 
               className={`w-full ${service.urgent ? 'bg-accent hover:bg-accent/90' : 'bg-primary hover:bg-primary/90'}`}
-              onClick={() => {
-                handleServiceSelect(service.id);
-                window.open('https://functions.pro-talk.ru/api/v1.0/chatgpt_widget_dialog_api?record_id=recYnAPYvshTKXGtV&promt_id=33618&lang=ru&fullscreen=1&voice=1&file=1&circle=1', '_blank');
-              }}
+              onClick={() => handleServiceSelect(service.id)}
             >
-              <Icon name="Bot" size={16} className="mr-2" />
+              <Icon name="ShoppingCart" size={16} className="mr-2" />
               Заказать
             </Button>
           </DialogTrigger>
@@ -218,12 +215,10 @@ const ServicesSection: React.FC<ServicesSectionProps> = ({
                 />
               </div>
 
-              <div className="flex gap-3">
-                <Button type="button" className="flex-1 bg-primary hover:bg-primary/90" onClick={() => window.open('https://functions.pro-talk.ru/api/v1.0/chatgpt_widget_dialog_api?record_id=recYnAPYvshTKXGtV&promt_id=33618&lang=ru&fullscreen=1&voice=1&file=1&circle=1', '_blank')}>
-                  <Icon name="Bot" size={16} className="mr-2" />
-                  Заказать через ИИ
-                </Button>
-              </div>
+              <Button type="submit" className="w-full bg-primary hover:bg-primary/90">
+                <Icon name="Send" size={16} className="mr-2" />
+                Отправить заявку
+              </Button>
             </form>
           </DialogContent>
         </Dialog>

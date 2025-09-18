@@ -43,7 +43,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
             <Dialog>
               <DialogTrigger asChild>
-                <Button size="lg" className="bg-primary hover:bg-primary/90 text-lg px-8 py-4" onClick={() => window.open('https://functions.pro-talk.ru/api/v1.0/chatgpt_widget_dialog_api?record_id=recYnAPYvshTKXGtV&promt_id=33618&lang=ru&fullscreen=1&voice=1&file=1&circle=1', '_blank')}>
+                <Button size="lg" className="bg-primary hover:bg-primary/90 text-lg px-8 py-4">
                   <Icon name="MessageSquare" size={20} className="mr-2" />
                   Получить консультацию
                 </Button>
@@ -133,25 +133,117 @@ const HeroSection: React.FC<HeroSectionProps> = ({
                     />
                   </div>
 
-                  <div className="flex gap-3">
-                    <Button type="button" className="flex-1 bg-primary hover:bg-primary/90" onClick={() => window.open('https://functions.pro-talk.ru/api/v1.0/chatgpt_widget_dialog_api?record_id=recYnAPYvshTKXGtV&promt_id=33618&lang=ru&fullscreen=1&voice=1&file=1&circle=1', '_blank')}>
-                      <Icon name="Bot" size={16} className="mr-2" />
-                      Получить консультацию
-                    </Button>
-                  </div>
+                  <Button type="submit" className="w-full bg-primary hover:bg-primary/90">
+                    <Icon name="Send" size={16} className="mr-2" />
+                    Отправить заявку
+                  </Button>
                 </form>
               </DialogContent>
             </Dialog>
             
-            <Button 
-              size="lg" 
-              variant="outline" 
-              className="text-lg px-8 py-4"
-              onClick={() => window.open('https://functions.pro-talk.ru/api/v1.0/chatgpt_widget_dialog_api?record_id=recYnAPYvshTKXGtV&promt_id=33618&lang=ru&fullscreen=1&voice=1&file=1&circle=1', '_blank')}
-            >
-              <Icon name="Bot" size={20} className="mr-2" />
-              5 минут — узнаете что делать
-            </Button>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button 
+                  size="lg" 
+                  variant="outline" 
+                  className="text-lg px-8 py-4"
+                >
+                  <Icon name="Clock" size={20} className="mr-2" />
+                  5 минут — узнаете что делать
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[500px]">
+                <DialogHeader>
+                  <DialogTitle className="font-sans">Быстрая консультация</DialogTitle>
+                  <DialogDescription>
+                    5 минут — и вы узнаете, что делать дальше
+                  </DialogDescription>
+                </DialogHeader>
+
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="quick-name">Имя *</Label>
+                      <Input
+                        id="quick-name"
+                        value={formData.name}
+                        onChange={(e) => handleInputChange('name', e.target.value)}
+                        className={formErrors.name ? 'border-destructive' : ''}
+                        placeholder="Ваше имя"
+                      />
+                      {formErrors.name && (
+                        <p className="text-sm text-destructive mt-1">{formErrors.name}</p>
+                      )}
+                    </div>
+                    <div>
+                      <Label htmlFor="quick-phone">Телефон *</Label>
+                      <Input
+                        id="quick-phone"
+                        value={formData.phone}
+                        onChange={(e) => handleInputChange('phone', e.target.value)}
+                        className={formErrors.phone ? 'border-destructive' : ''}
+                        placeholder="+7 999 123-45-67"
+                      />
+                      {formErrors.phone && (
+                        <p className="text-sm text-destructive mt-1">{formErrors.phone}</p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="quick-messenger">Мессенджер для связи</Label>
+                    <Select value={formData.messenger} onValueChange={(value) => handleInputChange('messenger', value)}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="telegram">Telegram</SelectItem>
+                        <SelectItem value="whatsapp">WhatsApp</SelectItem>
+                        <SelectItem value="phone">Звонок</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="quick-service">Что вас интересует?</Label>
+                    <Select 
+                      value={formData.service} 
+                      onValueChange={(value) => {
+                        handleInputChange('service', value);
+                        handleServiceSelect(value);
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Выберите услугу" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {services.map((service) => (
+                          <SelectItem key={service.id} value={service.id}>
+                            {service.title}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="quick-message">Ваша ситуация</Label>
+                    <Textarea
+                      id="quick-message"
+                      value={formData.message}
+                      onChange={(e) => handleInputChange('message', e.target.value)}
+                      placeholder="Кратко опишите что произошло..."
+                      rows={3}
+                    />
+                  </div>
+
+                  <Button type="submit" className="w-full bg-primary hover:bg-primary/90">
+                    <Icon name="Send" size={16} className="mr-2" />
+                    Отправить заявку
+                  </Button>
+                </form>
+              </DialogContent>
+            </Dialog>
           </div>
 
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 max-w-3xl mx-auto">

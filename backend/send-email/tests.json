@@ -1,0 +1,29 @@
+{
+  "tests": [
+    {
+      "name": "Test form submission",
+      "method": "POST",
+      "body": {
+        "name": "Иван Петров",
+        "phone": "+7 912 345 67 89",
+        "messenger": "telegram",
+        "service": "Консультация по РВП",
+        "message": "Нужна помощь с документами",
+        "urgentConsultation": false
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "success": "boolean",
+        "message": "string"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Test OPTIONS request",
+      "method": "OPTIONS",
+      "expectedStatus": 200,
+      "expectedBody": "",
+      "bodyMatcher": "exact"
+    }
+  ]
+}

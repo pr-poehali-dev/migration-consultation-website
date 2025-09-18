@@ -286,7 +286,7 @@ const Index = () => {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const errors = validateForm(formData);
     
@@ -295,22 +295,50 @@ const Index = () => {
       return;
     }
 
-    toast({
-      title: "Заявка отправлена!",
-      description: "Мы свяжемся с вами в течение 15 минут",
-    });
+    try {
+      const selectedServiceObj = services.find(s => s.id === formData.service);
+      const serviceTitle = selectedServiceObj ? selectedServiceObj.title : formData.service;
 
-    setFormData({
-      name: '',
-      phone: '',
-      messenger: 'telegram',
-      message: '',
-      service: '',
-      urgentConsultation: false
-    });
-    setSelectedService('');
-    setCalculatedPrice(0);
-    setFormErrors({});
+      const response = await fetch('https://functions.poehali.dev/de88ac79-adac-4fb5-a2a7-30f8061abbd7', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...formData,
+          service: serviceTitle
+        })
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        toast({
+          title: "Заявка отправлена!",
+          description: "Мы свяжемся с вами в течение 15 минут",
+        });
+
+        setFormData({
+          name: '',
+          phone: '',
+          messenger: 'telegram',
+          message: '',
+          service: '',
+          urgentConsultation: false
+        });
+        setSelectedService('');
+        setCalculatedPrice(0);
+        setFormErrors({});
+      } else {
+        throw new Error(result.error || 'Ошибка отправки');
+      }
+    } catch (error) {
+      toast({
+        title: "Ошибка отправки",
+        description: "Попробуйте еще раз или свяжитесь с нами по телефону",
+        variant: "destructive"
+      });
+    }
   };
 
   const commonProps = {
@@ -359,7 +387,9 @@ const Index = () => {
         <CTASection 
           formData={formData}
           formErrors={formErrors}
+          services={services}
           handleInputChange={handleInputChange}
+          handleServiceSelect={handleServiceSelect}
           handleSubmit={handleSubmit}
         />
       </main>
